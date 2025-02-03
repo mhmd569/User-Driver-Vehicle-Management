@@ -1,55 +1,83 @@
-const Driver = require('../models/Driver');
+const { validationResult } = require("express-validator");
+const Driver = require("../models/Driver");
+const hashPassword = require("../utils/hashPassword");
 
-exports.createDriver = async (req, res) => {
+exports.createDriver = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
-    const driver = await Driver.create(req.body);
+    const { password, ...rest } = req.body;
+    const hashedPassword = await hashPassword(password);
+    const driver = new Driver({ password: hashedPassword, ...rest });
+    await driver.save();
     res.status(201).json(driver);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.getDrivers = async (req, res) => {
+exports.getAllDrivers = async (req, res, next) => {
   try {
-    const drivers = await Driver.find().populate('vehicles');
+    const drivers = await Driver.find();
     res.status(200).json(drivers);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.getDriverById = async (req, res) => {
+exports.getDriverById = async (req, res, next) => {
   try {
-    const driver = await Driver.findById(req.params.id).populate('vehicles');
+    const driver = await Driver.findById(req.params.id);
     if (!driver) {
-      return res.status(404).json({ message: 'Driver not found' });
+      return res.status(404).json({ message: "Driver not found" });
     }
     res.status(200).json(driver);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.updateDriver = async (req, res) => {
+exports.updateDriver = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
-    const driver = await Driver.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { password, ...rest } = req.body;
+    if (password) {
+      rest.password = await hashPassword(password);
+    }
+    const driver = await Driver.findByIdAndUpdate(req.params.id, rest, { new: true });
     if (!driver) {
-      return res.status(404).json({ message: 'Driver not found' });
+      return res.status(404).json({ message: "Driver not found" });
     }
     res.status(200).json(driver);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.deleteDriver = async (req, res) => {
+exports.deleteDriver = async (req, res, next) => {
   try {
     const driver = await Driver.findByIdAndDelete(req.params.id);
     if (!driver) {
-      return res.status(404).json({ message: 'Driver not found' });
+      return res.status(404).json({ message: "Driver not found" });
     }
-    res.status(200).json({ message: 'Driver deleted' });
+    res.status(200).json({ message: "Driver deleted successfully" });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error);
+  }
+};
+
+exports.getDriversWithVehicles = async (req, res, next) => {
+  try {
+    const drivers = await Driver.find().populate("vehicle");
+    res.status(200).json(drivers);
+  } catch (error) {
+    next(error);
   }
 };
