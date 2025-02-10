@@ -12,10 +12,19 @@ exports.signup = async (req, res, next) => {
 
   try {
     const { email, password, ...rest } = req.body;
-    const userOld = await User.findOne({ email });
-    if (userOld) {
-      return res.status(400).json({ message: "user already exists" });
+    // Check if email or phone number already exists
+    const existingUser = await User.findOne({
+      $or: [{ email }, { phoneNumber: rest.phoneNumber }],
+    });
+
+    if (existingUser) {
+      const conflictField =
+        existingUser.email === email ? "email" : "phone number";
+      return res
+        .status(400)
+        .json({ message: `${conflictField} already exists` });
     }
+
     const hashedPassword = await hashPassword(password);
     const user = new User({ email, password: hashedPassword, ...rest });
     await user.save();

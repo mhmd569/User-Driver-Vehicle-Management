@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
 exports.createUser = async (req, res, next) => {
   const errors = validationResult(req);
@@ -8,7 +9,13 @@ exports.createUser = async (req, res, next) => {
   }
 
   try {
-    const user = new User(req.body);
+    const { password, ...rest } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({
+      ...rest,
+      password: hashedPassword,
+      profileImage: req.file.path,
+    });
     await user.save();
     res.status(201).json(user);
   } catch (error) {
@@ -44,7 +51,16 @@ exports.updateUser = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { password, ...rest } = req.body;
+    if (password) {
+      rest.password = await bcrypt.hash(password, 10);
+    }
+    if (req.file) {
+      rest.profileImage = req.file.path;
+    }
+    const user = await User.findByIdAndUpdate(req.params.id, rest, {
+      new: true,
+    });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

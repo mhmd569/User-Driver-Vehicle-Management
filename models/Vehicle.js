@@ -16,6 +16,7 @@ const vehicleSchema = new mongoose.Schema({
   licenseStatus: String,
   numberOfSeats: Number,
   available: Boolean,
+  vehicleImage: String, // URL to the vehicle image
   driver: { type: mongoose.Schema.Types.ObjectId, ref: "Driver", unique: true }, // One-to-One with Driver
 });
 

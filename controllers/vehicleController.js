@@ -1,15 +1,20 @@
 const { validationResult } = require("express-validator");
 const Vehicle = require("../models/Vehicle");
-const Driver = require("../models/Driver");
 
 exports.createVehicle = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-
   try {
-    const vehicle = new Vehicle(req.body);
+    const oldVehicle = await Vehicle.findOne({
+      plateNumber: req.body.plateNumber,
+    });
+    if (oldVehicle) {
+      return res.status(400).json({ message: "Vehicle already exists" });
+    }
+    const vehicleData = { ...req.body, vehicleImage: req.file.path };
+    const vehicle = new Vehicle(vehicleData);
     await vehicle.save();
     res.status(201).json(vehicle);
   } catch (error) {
@@ -45,7 +50,17 @@ exports.updateVehicle = async (req, res, next) => {
   }
 
   try {
-    const vehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const vehicleData = { ...req.body };
+    if (req.file) {
+      vehicleData.vehicleImage = req.file.path;
+    }
+    const vehicle = await Vehicle.findByIdAndUpdate(
+      req.params.id,
+      vehicleData,
+      {
+        new: true,
+      }
+    );
     if (!vehicle) {
       return res.status(404).json({ message: "Vehicle not found" });
     }

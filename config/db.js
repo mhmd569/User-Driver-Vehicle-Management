@@ -7,7 +7,7 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     mongoose.set("strictPopulate", false);
-    console.log("MongoDB connected");
+    console.log("MongoDB connected...");
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
     process.exit(1);
