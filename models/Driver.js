@@ -1,19 +1,31 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+
+const LicenseStatusEnum = ["valid", "expired"];
 
 const driverSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  username: { type: String, unique: true, required: true },
+  name: String,
+  username: { type: String, unique: true },
   password: { type: String, required: true },
-  employeeId: { type: String, unique: true, required: true },
+  employeeId: { type: String, unique: true },
   profileImage: String,
   birthday: Date,
-  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
-  licenseNumber: { type: String, unique: true, required: true },
+  status: String,
+  licenseNumber: String,
   licenseImage: String,
-  licenseStatus: { type: String, enum: ['valid', 'expired'], required: true },
+  licenseStatus: {
+    type: String,
+    enum: LicenseStatusEnum,
+  },
   licenseExpiry: Date,
   nationality: String,
-  languages: [String]
-}, { timestamps: true });
+  languages: [String],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  vehicle: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Vehicle",
+    unique: true,
+  }, // One-to-One with Vehicle
+});
 
-module.exports = mongoose.model('Driver', driverSchema);
+module.exports = mongoose.model("Driver", driverSchema);
