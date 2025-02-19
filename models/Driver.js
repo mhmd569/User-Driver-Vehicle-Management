@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const LicenseStatusEnum = ["valid", "expired"];
+
 const driverSchema = new mongoose.Schema({
   name: String,
   username: { type: String, unique: true },
@@ -10,7 +12,10 @@ const driverSchema = new mongoose.Schema({
   status: String,
   licenseNumber: String,
   licenseImage: String,
-  licenseStatus: String,
+  licenseStatus: {
+    type: String,
+    enum: LicenseStatusEnum,
+  },
   licenseExpiry: Date,
   nationality: String,
   languages: [String],

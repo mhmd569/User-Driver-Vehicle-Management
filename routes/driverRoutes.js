@@ -43,11 +43,11 @@ router.post(
     check("username", "Username is required").not().isEmpty(),
     validatePassword,
     check("employeeId", "Employee ID is required").not().isEmpty(),
-    check("birthday", "Birthday is required").isDate(),
+    check("birthday", "Birthday is required").isISO8601(),
     check("status", "Status is required").not().isEmpty(),
     check("licenseNumber", "License Number is required").not().isEmpty(),
     check("licenseStatus", "License Status is required").not().isEmpty(),
-    check("licenseExpiry", "License Expiry is required").isDate(),
+    check("licenseExpiry", "License Expiry is required").isISO8601(),
     check("nationality", "Nationality is required").not().isEmpty(),
     check("languages", "Languages are required").isArray({ min: 1 }),
     body("profileImage").custom((value, { req }) => {
@@ -62,6 +62,7 @@ router.post(
 );
 
 router.get("/", authMiddleware, getAllDrivers);
+router.get("/with-vehicles", authMiddleware, getDriversWithVehicles);
 
 router.get("/:id", authMiddleware, getDriverById);
 
@@ -71,11 +72,9 @@ router.put(
   [
     check("name", "Name is required").optional().not().isEmpty(),
     check("username", "Username is required").optional().not().isEmpty(),
-    check("password", "Password must be at least 6 characters long")
-      .optional()
-      .isLength({ min: 6 }),
+    validatePassword,
     check("employeeId", "Employee ID is required").optional().not().isEmpty(),
-    check("birthday", "Birthday is required").optional().isDate(),
+    check("birthday", "Birthday is required").optional().isISO8601(),
     check("status", "Status is required").optional().not().isEmpty(),
     check("licenseNumber", "License Number is required")
       .optional()
@@ -85,7 +84,7 @@ router.put(
       .optional()
       .not()
       .isEmpty(),
-    check("licenseExpiry", "License Expiry is required").optional().isDate(),
+    check("licenseExpiry", "License Expiry is required").optional().isISO8601(),
     check("nationality", "Nationality is required").optional().not().isEmpty(),
     check("languages", "Languages are required").optional().isArray({ min: 1 }),
     body("profileImage").custom((value, { req }) => {
@@ -100,7 +99,5 @@ router.put(
 );
 
 router.delete("/:id", authMiddleware, deleteDriver);
-
-router.get("/with-vehicles", authMiddleware, getDriversWithVehicles);
 
 module.exports = router;

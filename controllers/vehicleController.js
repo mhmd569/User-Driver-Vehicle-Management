@@ -13,12 +13,16 @@ exports.createVehicle = async (req, res, next) => {
     if (oldVehicle) {
       return res.status(400).json({ message: "Vehicle already exists" });
     }
-    const vehicleData = { ...req.body, vehicleImage: req.file.path };
+    const vehicleData = {
+      ...req.body,
+      vehicleImage: req.file.path,
+      licenseStatus: req.body.licenseStatus.toLowerCase(),
+    };
     const vehicle = new Vehicle(vehicleData);
     await vehicle.save();
     res.status(201).json(vehicle);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -27,7 +31,7 @@ exports.getAllVehicles = async (req, res, next) => {
     const vehicles = await Vehicle.find();
     res.status(200).json(vehicles);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -39,7 +43,7 @@ exports.getVehicleById = async (req, res, next) => {
     }
     res.status(200).json(vehicle);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -66,7 +70,7 @@ exports.updateVehicle = async (req, res, next) => {
     }
     res.status(200).json(vehicle);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -78,7 +82,7 @@ exports.deleteVehicle = async (req, res, next) => {
     }
     res.status(200).json({ message: "Vehicle deleted successfully" });
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -87,6 +91,6 @@ exports.getVehiclesWithDrivers = async (req, res, next) => {
     const vehicles = await Vehicle.find().populate("driver");
     res.status(200).json(vehicles);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };

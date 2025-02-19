@@ -9,17 +9,31 @@ exports.createUser = async (req, res, next) => {
   }
 
   try {
-    const { password, ...rest } = req.body;
+    const { email, password, ...rest } = req.body;
+    // Check if email or phone number already exists
+    const existingUser = await User.findOne({
+      $or: [{ email }, { phoneNumber: rest.phoneNumber }],
+    });
+
+    if (existingUser) {
+      const conflictField =
+        existingUser.email === email ? "email" : "phone number";
+      return res
+        .status(400)
+        .json({ message: `${conflictField} already exists` });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       ...rest,
+      email: email,
       password: hashedPassword,
       profileImage: req.file.path,
     });
     await user.save();
     res.status(201).json(user);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -28,7 +42,7 @@ exports.getAllUsers = async (req, res, next) => {
     const users = await User.find();
     res.status(200).json(users);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -40,7 +54,7 @@ exports.getUserById = async (req, res, next) => {
     }
     res.status(200).json(user);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -58,6 +72,20 @@ exports.updateUser = async (req, res, next) => {
     if (req.file) {
       rest.profileImage = req.file.path;
     }
+
+    const isEmailOrPhoneNumberExists = await User.findOne({
+      $or: [{ email: rest.email }, { phoneNumber: rest.phoneNumber }],
+    });
+    if (isEmailOrPhoneNumberExists) {
+      const conflictField =
+        isEmailOrPhoneNumberExists.email === rest.email
+          ? "email"
+          : "phone number";
+      return res
+        .status(400)
+        .json({ message: `${conflictField} already exists` });
+    }
+
     const user = await User.findByIdAndUpdate(req.params.id, rest, {
       new: true,
     });
@@ -66,7 +94,7 @@ exports.updateUser = async (req, res, next) => {
     }
     res.status(200).json(user);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -78,6 +106,6 @@ exports.deleteUser = async (req, res, next) => {
     }
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };

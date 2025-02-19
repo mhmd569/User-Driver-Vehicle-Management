@@ -70,6 +70,8 @@ router.post(
 
 router.get("/", authMiddleware, getAllVehicles);
 
+router.get("/with-drivers", authMiddleware, getVehiclesWithDrivers);
+
 router.get("/:id", authMiddleware, getVehicleById);
 
 router.put(
@@ -115,7 +117,5 @@ router.put(
 );
 
 router.delete("/:id", authMiddleware, deleteVehicle);
-
-router.get("/with-drivers", authMiddleware, getVehiclesWithDrivers);
 
 module.exports = router;

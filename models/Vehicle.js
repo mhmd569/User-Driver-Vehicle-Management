@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const LicenseStatusEnum = ["valid", "expired"];
+
 const vehicleSchema = new mongoose.Schema({
   name: String,
   operationalID: { type: String, unique: true },
@@ -13,7 +15,10 @@ const vehicleSchema = new mongoose.Schema({
   features: [String],
   licenseExpiry: Date,
   daysUntilInspectionExpiry: Number,
-  licenseStatus: String,
+  licenseStatus: {
+    type: String,
+    enum: LicenseStatusEnum,
+  },
   numberOfSeats: Number,
   available: Boolean,
   vehicleImage: String, // URL to the vehicle image

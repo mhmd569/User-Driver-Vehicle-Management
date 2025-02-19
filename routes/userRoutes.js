@@ -9,6 +9,7 @@ const {
   deleteUser,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
+const validatePassword = require("../utils/validation");
 
 const router = express.Router();
 
@@ -44,9 +45,7 @@ router.post(
     check("role", "Role is required").not().isEmpty(),
     check("address", "Address is required").not().isEmpty(),
     check("status", "Status is required").not().isEmpty(),
-    check("password", "Password must be at least 6 characters long").isLength({
-      min: 6,
-    }),
+    validatePassword,
     body("profileImage").custom((value, { req }) => {
       if (!req.file) {
         throw new Error("Profile image is required");
@@ -75,9 +74,7 @@ router.put(
     check("role", "Role is required").optional().not().isEmpty(),
     check("address", "Address is required").optional().not().isEmpty(),
     check("status", "Status is required").optional().not().isEmpty(),
-    check("password", "Password must be at least 6 characters long")
-      .optional()
-      .isLength({ min: 6 }),
+    validatePassword,
     body("profileImage").custom((value, { req }) => {
       if (req.file && !req.file.mimetype.startsWith("image/")) {
         throw new Error("Invalid file type. Only images are allowed.");
